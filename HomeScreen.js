@@ -6,7 +6,7 @@ import Moment from 'moment';
 export default class HomeScreen extends React.Component{
 
     static navigationOptions = {
-        title: 'The Tribune'
+        title: 'Home'
     };
 
     constructor(props){
