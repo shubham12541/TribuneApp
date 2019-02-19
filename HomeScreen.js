@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight} from 'react-native';
 import Moment from 'moment';
+import ExpandableList from 'react-native-expandable-section-list';
 
 
 export default class HomeScreen extends React.Component{
@@ -19,12 +20,17 @@ export default class HomeScreen extends React.Component{
                 {id: 7, title: "Nation"},
                 {id: 8, title: "World"},
                 {id: 2, title: "Punjab"},
+                {id: 4, title: "Himanchal"},
+                {id: 16, title: "Delhi"},
                 {id: 5, title: "J&K"},
                 {id: 12, title: "Opinion"},
                 {id: 10, title: "Business"},
                 {id: 202, title: "In Focus"},
                 {id: 53, title: "Movie Review"},
-                {id: 203, title: "Weekly Pullouts"}
+                {id: 203, title: "Weekly Pullouts"},
+                {id: 18, title: "Sci/Tech/Gadgets"},
+                {id: 19, title: "Health"}
+
             ],
             isLoading: true
         };
@@ -101,7 +107,25 @@ export default class HomeScreen extends React.Component{
 
         return (
             <View style={styles.container}>
-                <SectionList
+
+                <ExpandableList 
+                    dataSource={this.state.config}
+                    headerKey="title"
+                    memberKey="data"
+                    renderRow={(item, rowId, sectionId) => {
+                        console.log(item, rowId, sectionId);
+                        return (
+                            <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item)}>
+                                <SectionListItem  itemData={item} />
+                            </TouchableHighlight> 
+                            )
+                        }
+                    }
+                    renderSectionHeaderX={(section, sectionId) => <Text style={styles.sectionHeader}>{section}</Text> } 
+                    openOptions={[0]}
+                 />
+
+                {/* <SectionList
                     stickySectionHeadersEnabled={true}
                     refreshing={ this.state.isLoading }
                     onRefresh={() => this.fetchNewsData()}
@@ -112,7 +136,7 @@ export default class HomeScreen extends React.Component{
                             <SectionListItem  itemData={item} />
                         </TouchableHighlight>  }
                     keyExtractor={ ({id}, index) => index }
-                    />
+                    /> */}
             </View>
         )
     }
