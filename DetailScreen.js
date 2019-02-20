@@ -10,6 +10,12 @@ export default class DetailScreen extends React.Component{
 
     componentDidMount(){
     }
+
+    _isValidImageUrl(imageUrl){
+        return imageUrl.toLowerCase().indexOf(".jpg") !== -1 
+            || imageUrl.toLowerCase().indexOf(".png") !== -1 
+            || imageUrl.toLowerCase().indexOf(".jpeg") !== -1;
+    }
     
     render(){
         const {navigation} = this.props;
@@ -21,11 +27,14 @@ export default class DetailScreen extends React.Component{
         const adjustedHeight = screenWidth/imageRatio;
 
         Moment.locale('en');
+        const defaultImageUrl = "https://lh3.googleusercontent.com/7CYIDjpL7SwqwSHARJ8SAEeNfGk7ZiEwNzWP01mfPxvV98Ku6i3wPHqADSrFDQDV5nCOA8Tv5QU=-p";
         
         return(
             <ScrollView>
                 <View style={styles.container}>
-                    <Image source={{uri: itemData.fullimage}} style={{height: adjustedHeight, width: screenWidth}} />
+                    <Image source={{uri: this._isValidImageUrl(itemData.fullimage) ? itemData.fullimage : defaultImageUrl }} 
+                        style={{height: adjustedHeight, width: screenWidth}} />
+
                     <Text style={styles.articleTitle} >{itemData.title}</Text>
                     <Text style={styles.sectionPublishedDate}>{Moment(itemData.pubDate).format('LLLL')}</Text>
                     {

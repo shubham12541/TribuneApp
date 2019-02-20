@@ -14,13 +14,12 @@ export default class HomeScreen extends React.Component{
         super(props);
 
         this.state = {
-            parsedData: [],
             config: [
                 {id: 0, title: "Top Headlines"},
                 {id: 7, title: "Nation"},
                 {id: 8, title: "World"},
                 {id: 2, title: "Punjab"},
-                {id: 4, title: "Himanchal"},
+                {id: 4, title: "Himachal"},
                 {id: 16, title: "Delhi"},
                 {id: 5, title: "J&K"},
                 {id: 12, title: "Opinion"},
@@ -30,7 +29,6 @@ export default class HomeScreen extends React.Component{
                 {id: 203, title: "Weekly Pullouts"},
                 {id: 18, title: "Sci/Tech/Gadgets"},
                 {id: 19, title: "Health"}
-
             ],
             isLoading: true
         };
@@ -113,7 +111,6 @@ export default class HomeScreen extends React.Component{
                     headerKey="title"
                     memberKey="data"
                     renderRow={(item, rowId, sectionId) => {
-                        console.log(item, rowId, sectionId);
                         return (
                             <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item)}>
                                 <SectionListItem  itemData={item} />
