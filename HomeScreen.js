@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight} from 'react-native';
 import Moment from 'moment';
 import ExpandableList from 'react-native-expandable-section-list';
+import TimeAgo from 'react-native-timeago';
 
 
 export default class HomeScreen extends React.Component{
@@ -192,7 +193,7 @@ class SectionListItem extends React.Component{
 
                 <View style={{flex: 1}}>
                     <Text style={styles.sectionTitleText} numberOfLines={4}>{this.props.itemData.title}</Text>
-                    <Text style={styles.sectionPublishedDate}>{ Moment(this.props.itemData.pubDate).format('LLLL')}</Text>
+                    <TimeAgo style={styles.sectionPublishedDate} time={this.props.itemData.pubDate} ></TimeAgo>
                 </View>
             </View>
         )
