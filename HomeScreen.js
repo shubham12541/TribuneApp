@@ -1,15 +1,19 @@
 import React from 'react';
-import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight} from 'react-native';
+import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button} from 'react-native';
 import Moment from 'moment';
 import ExpandableList from 'react-native-expandable-section-list';
 import TimeAgo from 'react-native-timeago';
 
-
 export default class HomeScreen extends React.Component{
 
-    static navigationOptions = {
-        title: 'Home'
-    };
+    static navigationOptions = ({navigation}) => {
+        return {
+            headerTitle: <Text style={{fontSize: 20, fontWeight: "bold"}}>Home</Text>,
+            headerRight: (
+                <Button style={{fontSize: 2}} title="Refresh" onPress={navigation.getParam("refresh")}></Button>
+            )
+        }
+    }
 
     constructor(props){
         super(props);
@@ -36,6 +40,7 @@ export default class HomeScreen extends React.Component{
     }
 
     componentDidMount(){
+        this.props.navigation.setParams({refresh: this.fetchNewsData.bind(this)})
         this.fetchNewsData();
     }
 
@@ -43,6 +48,11 @@ export default class HomeScreen extends React.Component{
         const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
 
         const parseString = require('react-native-xml2js').parseString;
+
+        this.setState(prevState => {
+            prevState.isLoading = true;
+            return prevState;
+        });
 
         Promise.all(this.state.config.map((oConfig) => {
             return fetch(BASE_URL + oConfig.id)
@@ -79,7 +89,6 @@ export default class HomeScreen extends React.Component{
                 });
             });
 
-            // console.log(config);
             this.setState({
                 config: config,
                 isLoading: false
@@ -98,8 +107,8 @@ export default class HomeScreen extends React.Component{
 
         if(this.state.isLoading){
             return(
-                <View style={styles.container}>
-                    <Text>Loading...</Text>
+                <View style={[styles.container, styles.centerItem]}>
+                    <Text>Take a deep breath</Text>
                 </View>
             )
         }
@@ -119,6 +128,7 @@ export default class HomeScreen extends React.Component{
                             )
                         }
                     }
+                    onRefreshStart={this.fetchNewsData.bind(this)}
                     renderSectionHeaderX={(section, sectionId) => <Text style={styles.sectionHeader}>{section}</Text> } 
                     openOptions={[0]}
                  />
@@ -144,6 +154,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1
     },
+
+    centerItem: {
+        alignItems: 'center',
+        marginTop: 25
+    },
+
     sectionHeader: {
         padding: 12,
         fontWeight: 'bold',
