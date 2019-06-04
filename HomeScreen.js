@@ -1,16 +1,32 @@
 import React from 'react';
-import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button, AsyncStorage} from 'react-native';
+import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button, 
+    AsyncStorage, ActivityIndicator, Platform} from 'react-native';
 import Moment from 'moment';
 import ExpandableList from 'react-native-expandable-section-list';
 import TimeAgo from 'react-native-timeago';
+import Icon from './IconComponent'
 
 export default class HomeScreen extends React.Component{
 
     static navigationOptions = ({navigation}) => {
         return {
-            headerTitle: <Text style={{fontSize: 20, fontWeight: "bold"}}>Home</Text>,
+            headerTitle: <Text style={{fontWeight: "bold"}}>Home</Text>,
             headerRight: (
-                <Button style={{fontSize: 2}} title="Refresh" onPress={navigation.getParam("refresh")}></Button>
+                <View style={styles.headerButtons}>
+                     <Icon
+                        style={styles.headerButtonsIcon}
+                        name="refresh"
+                        color="#5E98CA"
+                        onPress={navigation.getParam("refresh")}
+                        size={25} />
+                    <Icon 
+                        style={styles.headerButtonsIcon}
+                        name="settings"
+                        color="#5E98CA"
+                        onPress={navigation.getParam("settings")}
+                        size={25} />
+                </View>
+                // <Button title="Refresh" onPress={navigation.getParam("refresh")}></Button>
             )
         }
     }
@@ -19,32 +35,59 @@ export default class HomeScreen extends React.Component{
         super(props);
 
         this.state = {
-            config: [
-                {id: 0, title: "Top Headlines"},
-                {id: 7, title: "Nation"},
-                {id: 8, title: "World"},
-                {id: 2, title: "Punjab"},
-                {id: 4, title: "Himachal"},
-                {id: 16, title: "Delhi"},
-                {id: 5, title: "J&K"},
-                {id: 12, title: "Opinion"},
-                {id: 10, title: "Business"},
-                {id: 202, title: "In Focus"},
-                {id: 53, title: "Movie Review"},
-                {id: 203, title: "Weekly Pullouts"},
-                {id: 18, title: "Sci/Tech/Gadgets"},
-                {id: 19, title: "Health"}
-            ],
+            config: [],
             isLoading: true
         };
     }
 
     componentDidMount(){
-        this.props.navigation.setParams({refresh: this.fetchNewsData.bind(this)})
-        this.fetchNewsData();
+        this.props.navigation.setParams({refresh: this.fetchNewsData.bind(this)});
+        this.props.navigation.setParams({settings: this._nagivateToSettingsPage.bind(this)});
+
+        this.refreshView();
+        
     }
 
-    async fetchNewsData(){
+    refreshView(){
+        this._getSectionList().then(sections => {
+            const defaultConfig =  [
+                {id: 0, title: "Top Headlines"},
+                {id: 7, title: "Nation"},
+                {id: 8, title: "World"},
+                {id: 2, title: "Punjab"},
+                {id: 3, title: "Haryana"},
+                {id: 4, title: "Himachal"},
+                {id: 5, title: "J&K"},
+                {id: 16, title: "Delhi"},
+                {id: 14, title: "Chandigarh"},
+                {id: 9, title: "Sports"},
+                {id: 10, title: "Business"},
+                {id: 202, title: "In Focus"},
+                {id: 38, title: "Movie Reviews", mid: 53},
+                {id: 34, title: "Editorials", mid: 70},
+                {id: 36, title: "This day, that year", mid: 70},
+                {id: 24, title: "Lifestyle"},
+                {id: 18, title: "Tech"},
+                {id: 32, title: "Job & Careers"},
+                {id: 19, title: "Health"}
+            ];
+
+            if(!sections){
+                this._storeSectionList(JSON.stringify(defaultConfig));
+            }
+
+            this.setState({
+                config: sections ? JSON.parse(sections) : defaultConfig,
+                isLoading: true
+            });
+
+            this.fetchNewsData();
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
+    fetchNewsData(){
         const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
 
 
@@ -56,7 +99,7 @@ export default class HomeScreen extends React.Component{
         });
 
         Promise.all(this.state.config.map((oConfig) => {
-            return fetch(BASE_URL + oConfig.id)
+            return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
                 .then(response => response.text());
         })).then(aResponses => {
             let config = this.state.config;
@@ -84,7 +127,7 @@ export default class HomeScreen extends React.Component{
                                     width: oItem['media:content'][0].$.width,
                                     url: oItem['media:content'][0].$.url
                                 },
-                                isStoryRead: oItem.Articleid ? await  this._isStoryRead(oItem.Articleid) : false
+                                isStoryRead: oItem.Articleid ? await this._isStoryRead(oItem.Articleid) : false
                             };
     
                         })).then(aItems => {
@@ -99,11 +142,15 @@ export default class HomeScreen extends React.Component{
                 });
                 
             })).then(_ => {
+                config = config.filter(oList => oList.data.length > 0);
+
                 this.setState({
                     config: config,
                     isLoading: false
                 });
 
+            }).catch(err => {
+                console.log(err);
             });
 
         }).catch(err => console.log(err));
@@ -116,7 +163,37 @@ export default class HomeScreen extends React.Component{
 
         this._storeData(itemData.Articleid);
 
-        navigation.navigate('Detail', {itemData: itemData});
+        navigation.navigate('Detail', {});
+    }
+
+    _nagivateToSettingsPage(){
+        const {navigation} = this.props;
+        navigation.navigate('Settings', {
+            onGoBack: () => this.refreshView()
+        });
+    }
+
+    _storeSectionList = async (aSectionList) => {
+        try{
+            await AsyncStorage.setItem("@SectionList", aSectionList);
+        } catch(err){
+            console.log(err);
+        }
+    }
+
+    _getSectionList = async () =>{
+        try{
+            const sectionList = await AsyncStorage.getItem("@SectionList");
+            if(sectionList){
+                console.log(sectionList);
+                return sectionList;
+            } else{
+                return null;
+            }
+        } catch(err){
+            console.log(err);
+            return null;
+        }
     }
 
 
@@ -149,6 +226,7 @@ export default class HomeScreen extends React.Component{
         if(this.state.isLoading){
             return(
                 <View style={[styles.container, styles.centerItem]}>
+                    <ActivityIndicator size="small" color="#5E98CA" />
                     <Text>Take a deep breath</Text>
                 </View>
             )
@@ -162,6 +240,9 @@ export default class HomeScreen extends React.Component{
                     headerKey="title"
                     memberKey="data"
                     renderRow={(item, rowId, sectionId) => {
+                        if(!item){
+                            return <NoItem />
+                        }
                         return (
                             <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item, rowId, sectionId)}>
                                 <SectionListItem itemData={item} />
@@ -196,6 +277,16 @@ const styles = StyleSheet.create({
         flex: 1
     },
 
+    headerButtons: {
+        flex: 1,
+        flexDirection: 'row'
+    }, 
+
+    headerButtonsIcon: {
+        marginRight: 4,
+        marginLeft: 12
+    },
+
     centerItem: {
         alignItems: 'center',
         marginTop: 25
@@ -205,7 +296,8 @@ const styles = StyleSheet.create({
         padding: 12,
         fontWeight: 'bold',
         fontSize: 14,
-        backgroundColor: 'rgba(230,230,230,1.0)',
+        color: "white",
+        backgroundColor: 'rgba(94,152,202,1.0)',
     },
     sectionItem: {
         marginTop: 6,
@@ -269,3 +361,15 @@ class SectionListItem extends React.Component{
     }
 
 }
+
+class NoItem extends React.Component{
+
+    constructor(){}
+
+    render(){
+        return (
+            <Text text="No data found" />
+        )
+    }
+}
+

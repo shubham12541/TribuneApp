@@ -14,6 +14,7 @@
     "moment": "^2.24.0",
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
+    "react-native-draggable-flatlist": "^1.1.7",
     "react-native-expandable-section-list": "^1.0.7",
     "react-native-html-to-text": "0.0.5",
     "react-native-pull-refresh": "^1.0.0",
