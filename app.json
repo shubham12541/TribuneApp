@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "com.tominc.tribuneapp",
-      "versionCode": 2
+      "versionCode": 3
     }
   }
 }

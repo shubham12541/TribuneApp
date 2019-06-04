@@ -163,7 +163,7 @@ export default class HomeScreen extends React.Component{
 
         this._storeData(itemData.Articleid);
 
-        navigation.navigate('Detail', {});
+        navigation.navigate('Detail', {itemData: itemData});
     }
 
     _nagivateToSettingsPage(){

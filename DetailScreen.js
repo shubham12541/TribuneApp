@@ -42,7 +42,7 @@ export default class DetailScreen extends React.Component{
     render(){
         const {navigation} = this.props;
         const itemData = navigation.getParam("itemData", {});
-        // console.log(itemData);
+        console.log(itemData);
         const imageRatio = Number.parseInt(itemData.mediacontent.width, 10)/Number.parseInt(itemData.mediacontent.height, 10);
 
         const screenWidth = Dimensions.get("window").width;
