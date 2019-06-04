@@ -24,7 +24,7 @@ export default class DetailScreen extends React.Component{
         // If the tag is an <a> and we've found a parent to be a blockquote
         // (see the utils part of this documentation to know more about getParentsTagsRecursively)
         if (name === 'iframe' ) {
-            console.log(node.attribs);
+            // console.log(node.attribs);
             // Let's assign a specific color to the node's attribs (if there already are)
             // node.attribs = { ...(node.attribs || {}), style: `width:40px;` };
 
@@ -42,7 +42,7 @@ export default class DetailScreen extends React.Component{
     render(){
         const {navigation} = this.props;
         const itemData = navigation.getParam("itemData", {});
-        console.log(itemData);
+        // console.log(itemData);
         const imageRatio = Number.parseInt(itemData.mediacontent.width, 10)/Number.parseInt(itemData.mediacontent.height, 10);
 
         const screenWidth = Dimensions.get("window").width;

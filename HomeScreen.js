@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button} from 'react-native';
+import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button, AsyncStorage} from 'react-native';
 import Moment from 'moment';
 import ExpandableList from 'react-native-expandable-section-list';
 import TimeAgo from 'react-native-timeago';
@@ -44,8 +44,9 @@ export default class HomeScreen extends React.Component{
         this.fetchNewsData();
     }
 
-    fetchNewsData(){
+    async fetchNewsData(){
         const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
+
 
         const parseString = require('react-native-xml2js').parseString;
 
@@ -59,47 +60,87 @@ export default class HomeScreen extends React.Component{
                 .then(response => response.text());
         })).then(aResponses => {
             let config = this.state.config;
-            aResponses.map((response, index) => {
-                parseString(response, (err, result) => {
-                    let items = result && result.rss && result.rss.channel ? result.rss.channel[0].item : [];
-
-                    items = items.map((oItem) => {
-                        return {
-                            title: oItem.title ? oItem.title[0] : "",
-                            pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
-                            thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
-                            updatedDate: oItem.updatedDate ? oItem.updatedDate[0] : "",
-                            video_url:  oItem.video_url ? oItem.video_url[0] : "",
-                            link: oItem.link?  oItem.link[0] : "",
-                            fullimage: oItem.fullimage ? oItem.fullimage[0] : "",
-                            excerpt: oItem.excerpt ? oItem.excerpt[0] : "",
-                            description: oItem.description ? oItem.description[0] : "",
-                            Articleid: oItem.Articleid ? oItem.Articleid[0] : "",
-                            authorname: oItem.authorname ? oItem.authorname[0] : "",
-                            authorimage: oItem.authorimage ? oItem.authorimage[0] : "",
-                            mediacontent: {
-                                height: oItem['media:content'][0].$.height,
-                                width: oItem['media:content'][0].$.width,
-                                url: oItem['media:content'][0].$.url
-                            }
-                        }
+            Promise.all(aResponses.map((response, index) => {
+                return new Promise((resolve, reject) => {
+                    parseString(response, (err, result) => {
+                        let items = result && result.rss && result.rss.channel ? result.rss.channel[0].item : [];
+    
+                        Promise.all(items.map(async (oItem) => {
+                            return {
+                                title: oItem.title ? oItem.title[0] : "",
+                                pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
+                                thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
+                                updatedDate: oItem.updatedDate ? oItem.updatedDate[0] : "",
+                                video_url:  oItem.video_url ? oItem.video_url[0] : "",
+                                link: oItem.link?  oItem.link[0] : "",
+                                fullimage: oItem.fullimage ? oItem.fullimage[0] : "",
+                                excerpt: oItem.excerpt ? oItem.excerpt[0] : "",
+                                description: oItem.description ? oItem.description[0] : "",
+                                Articleid: oItem.Articleid ? oItem.Articleid[0] : "",
+                                authorname: oItem.authorname ? oItem.authorname[0] : "",
+                                authorimage: oItem.authorimage ? oItem.authorimage[0] : "",
+                                mediacontent: {
+                                    height: oItem['media:content'][0].$.height,
+                                    width: oItem['media:content'][0].$.width,
+                                    url: oItem['media:content'][0].$.url
+                                },
+                                isStoryRead: oItem.Articleid ? await  this._isStoryRead(oItem.Articleid) : false
+                            };
+    
+                        })).then(aItems => {
+                            config[index]['data'] = aItems;
+                            resolve();
+                        }).catch(err => {
+                            console.log(err);
+                            reject();
+                        });
+                        
                     });
-
-                    config[index]['data'] = items;
                 });
+                
+            })).then(_ => {
+                this.setState({
+                    config: config,
+                    isLoading: false
+                });
+
             });
 
-            this.setState({
-                config: config,
-                isLoading: false
-            });
         }).catch(err => console.log(err));
     }
 
-    _navigateToDetailPage(itemData){
+    _navigateToDetailPage(itemData, rowId, sectionId){
         const {navigation} = this.props;
 
+        this.state.config[parseInt(sectionId, 10)].data[parseInt(rowId, 10)].isStoryRead = true;
+
+        this._storeData(itemData.Articleid);
+
         navigation.navigate('Detail', {itemData: itemData});
+    }
+
+
+    _storeData = async (title) => {
+        try{
+            await AsyncStorage.setItem("@PageRead:" + title, "yes");
+        } catch(err){
+            console.log(err);
+        }
+    }
+
+
+    _isStoryRead = async (articleId) => {
+        try{
+            const value = await AsyncStorage.getItem("@PageRead:" + articleId);
+            if(value) {
+                return true;
+            } else{
+                return false;
+            }
+        } catch(err){
+            console.log(err);
+            return false;
+        }
     }
 
     render(){
@@ -122,8 +163,8 @@ export default class HomeScreen extends React.Component{
                     memberKey="data"
                     renderRow={(item, rowId, sectionId) => {
                         return (
-                            <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item)}>
-                                <SectionListItem  itemData={item} />
+                            <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item, rowId, sectionId)}>
+                                <SectionListItem itemData={item} />
                             </TouchableHighlight> 
                             )
                         }
@@ -173,6 +214,18 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
 
+    readStory: {
+        fontWeight: "300",
+        color: "#999999"
+        // backgroundColor: "red"
+
+    },
+
+    unreadStory: {
+        fontWeight: "500",
+        // backgroundColor: "blue"
+    },
+
     thumbimage: {
         height: 76,
         width: 114
@@ -208,7 +261,7 @@ class SectionListItem extends React.Component{
                     style={styles.thumbimage} />
 
                 <View style={{flex: 1}}>
-                    <Text style={styles.sectionTitleText} numberOfLines={4}>{this.props.itemData.title}</Text>
+                    <Text style={[styles.sectionTitleText, this.props.itemData.isStoryRead ? styles.readStory : styles.unreadStory]} numberOfLines={4}>{this.props.itemData.title}</Text>
                     <TimeAgo style={styles.sectionPublishedDate} time={this.props.itemData.pubDate} ></TimeAgo>
                 </View>
             </View>
