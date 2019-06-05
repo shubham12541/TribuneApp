@@ -51,25 +51,25 @@ export default class HomeScreen extends React.Component{
     refreshView(){
         this._getSectionList().then(sections => {
             const defaultConfig =  [
-                {id: 0, title: "Top Headlines"},
-                {id: 7, title: "Nation"},
-                {id: 8, title: "World"},
-                {id: 2, title: "Punjab"},
-                {id: 3, title: "Haryana"},
-                {id: 4, title: "Himachal"},
-                {id: 5, title: "J&K"},
-                {id: 16, title: "Delhi"},
-                {id: 14, title: "Chandigarh"},
-                {id: 9, title: "Sports"},
-                {id: 10, title: "Business"},
-                {id: 202, title: "In Focus"},
-                {id: 38, title: "Movie Reviews", mid: 53},
-                {id: 34, title: "Editorials", mid: 70},
-                {id: 36, title: "This day, that year", mid: 70},
-                {id: 24, title: "Lifestyle"},
-                {id: 18, title: "Tech"},
-                {id: 32, title: "Job & Careers"},
-                {id: 19, title: "Health"}
+                {id: 0, title: "Top Headlines", visible: true},
+                {id: 7, title: "Nation" , visible: true},
+                {id: 8, title: "World", visible: true},
+                {id: 2, title: "Punjab", visible: true},
+                {id: 3, title: "Haryana", visible: true},
+                {id: 4, title: "Himachal", visible: true},
+                {id: 5, title: "J&K", visible: true},
+                {id: 16, title: "Delhi", visible: true},
+                {id: 14, title: "Chandigarh", visible: true},
+                {id: 9, title: "Sports", visible: true},
+                {id: 10, title: "Business", visible: true},
+                {id: 202, title: "In Focus", visible: true},
+                {id: 38, title: "Movie Reviews", mid: 53, visible: true},
+                {id: 34, title: "Editorials", mid: 70, visible: true},
+                {id: 36, title: "This day, that year", mid: 70, visible: true},
+                {id: 24, title: "Lifestyle", visible: true},
+                {id: 18, title: "Tech", visible: true},
+                {id: 32, title: "Job & Careers", visible: true},
+                {id: 19, title: "Health", visible: true}
             ];
 
             if(!sections){
@@ -98,9 +98,11 @@ export default class HomeScreen extends React.Component{
             return prevState;
         });
 
-        Promise.all(this.state.config.map((oConfig) => {
-            return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
-                .then(response => response.text());
+        Promise.all(this.state.config
+                        .filter(oConfig => oConfig.visible)
+                        .map((oConfig) => {
+                            return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
+                                .then(response => response.text());
         })).then(aResponses => {
             let config = this.state.config;
             Promise.all(aResponses.map((response, index) => {
@@ -142,7 +144,7 @@ export default class HomeScreen extends React.Component{
                 });
                 
             })).then(_ => {
-                config = config.filter(oList => oList.data.length > 0);
+                config = config.filter(oList => oList.data && oList.data.length > 0);
 
                 this.setState({
                     config: config,
