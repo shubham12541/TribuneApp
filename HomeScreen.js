@@ -10,7 +10,7 @@ export default class HomeScreen extends React.Component{
 
     static navigationOptions = ({navigation}) => {
         return {
-            headerTitle: <Text style={{fontWeight: "bold"}}>Home</Text>,
+            headerTitle: <Text style={{fontWeight: "bold", marginHorizontal: 4}}>Home</Text>,
             headerRight: (
                 <View style={styles.headerButtons}>
                      <Icon
@@ -72,9 +72,11 @@ export default class HomeScreen extends React.Component{
                 {id: 19, title: "Health", visible: true}
             ];
 
+
             if(!sections){
                 this._storeSectionList(JSON.stringify(defaultConfig));
-            }
+            } 
+
 
             this.setState({
                 config: sections ? JSON.parse(sections) : defaultConfig,
@@ -165,7 +167,7 @@ export default class HomeScreen extends React.Component{
 
         this._storeData(itemData.Articleid);
 
-        navigation.navigate('Detail', {itemData: itemData});
+        navigation.navigate('Detail', {itemData: itemData, sectionName: this.state.config[parseInt(sectionId, 10)].title});
     }
 
     _nagivateToSettingsPage(){

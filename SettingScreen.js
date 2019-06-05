@@ -74,6 +74,18 @@ export default class SettingScreen extends React.Component{
         });
     }
 
+    _addItem(item, index){
+        this.setState(prevState => {
+            const firstInvisibleIndex =  prevState.data.findIndex(oConfig => !oConfig.visible);
+            item.visible = true;
+
+            prevState.data.splice(index + firstInvisibleIndex, 1);
+            prevState.data.splice(firstInvisibleIndex, 0, item);
+
+            return prevState;
+        });
+    }
+
     _updateVisibleData(data){
         this.setState(prevState => {
             const invisibleSections = prevState.data.filter(oConfig => !oConfig.visible);
@@ -87,8 +99,8 @@ export default class SettingScreen extends React.Component{
         return (
 
             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: isActive ? "#DCDCDC" : "white", padding: 4 }} >
-                <Icon name="remove-circle" size={20} color="#FF4500" onPress={this._removeItem.bind(this, item, index)} />
-                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 4}}>
+                <Icon name="remove-circle" size={22} color="#FF4500" onPress={this._removeItem.bind(this, item, index)} />
+                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 6}}>
                     <Text>{item.title}</Text>
                     <TouchableOpacity onLongPress={move} onPressOut={moveEnd} >
                         <Icon name="reorder" size={25} color="#000000" />
@@ -113,12 +125,21 @@ export default class SettingScreen extends React.Component{
         )
     }
 
+    _renderInvisibleItem = ({item, index}) => {
+        return (
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor : "white", padding: 4 }} >
+                <Icon name="add-circle" size={22} color="#7CFC00" onPress={this._addItem.bind(this, item, index)} />
+                <Text style={{ marginLeft: 6}}>{item.title}</Text>
+            </View>
+        )
+    }
+
     render(){
 
         return(
             <ScrollView>
                 <View style={styles.container}>
-                    <Text style={styles.textHeader}>Change Order</Text>
+                    <Text style={styles.textHeader}>Manage Sections</Text>
 
                     <DraggableFlatList
                         data={this.state.data.filter(oConfig => oConfig.visible)}
@@ -132,8 +153,8 @@ export default class SettingScreen extends React.Component{
 
                     <FlatList 
                         data={this.state.data.filter(oConfig => !oConfig.visible)}
-                        keyExtractor={(item, index) => item.id}
-                        renderItem={({item}) => <Text style={styles.textRowItem}>{item.title}</Text> }
+                        keyExtractor={(item, index) => item.id + ""}
+                        renderItem={this._renderInvisibleItem}
                      />
 
                 </View>

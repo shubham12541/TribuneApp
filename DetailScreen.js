@@ -5,6 +5,14 @@ import HTML from 'react-native-render-html';
 import { getParentsTagsRecursively } from 'react-native-render-html/src/HTMLUtils';
 
 export default class DetailScreen extends React.Component{
+
+
+    static navigationOptions = ({navigation}) => {
+        return {
+            headerTitle: <Text style={{fontWeight: "bold", marginHorizontal: 4}}>{navigation.getParam("sectionName", "")}</Text>,
+        }
+    }
+
     constructor(props){
         super(props);
     }
@@ -42,7 +50,8 @@ export default class DetailScreen extends React.Component{
     render(){
         const {navigation} = this.props;
         const itemData = navigation.getParam("itemData", {});
-        console.log(itemData);
+        const sectionName = navigation.getParam("sectionName", "");
+        console.log(sectionName);
         const imageRatio = Number.parseInt(itemData.mediacontent.width, 10)/Number.parseInt(itemData.mediacontent.height, 10);
 
         const screenWidth = Dimensions.get("window").width;
