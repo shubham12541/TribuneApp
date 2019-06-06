@@ -10,7 +10,7 @@ export default class SettingScreen extends React.Component{
         return {
             headerTitle: <Text style={{fontWeight: "bold"}}>Settings</Text>,
             headerRight: (
-                <Button title="Done" onPress={navigation.getParam("settingDone")}></Button>
+                <Icon name="checkmark-circle" size={30} color="#5E98CA" style={{marginRight: 20}} onPress={navigation.getParam("settingDone")}></Icon>
             )
         }
     }
@@ -35,7 +35,6 @@ export default class SettingScreen extends React.Component{
         try{
             const sectionList = await AsyncStorage.getItem("@SectionList");
             if(sectionList){
-                console.log(sectionList);
                 return JSON.parse(sectionList);
             } else{
                 return null;
@@ -99,11 +98,11 @@ export default class SettingScreen extends React.Component{
         return (
 
             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: isActive ? "#DCDCDC" : "white", padding: 4 }} >
-                <Icon name="remove-circle" size={22} color="#FF4500" onPress={this._removeItem.bind(this, item, index)} />
-                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 6}}>
-                    <Text>{item.title}</Text>
-                    <TouchableOpacity onLongPress={move} onPressOut={moveEnd} >
-                        <Icon name="reorder" size={25} color="#000000" />
+                <Icon name="remove-circle" size={24} color="#FF4500" onPress={this._removeItem.bind(this, item, index)} />
+                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 8}}>
+                    <Text style={{fontSize: 18}}>{item.title}</Text>
+                    <TouchableOpacity onPressIn={move} onPressOut={moveEnd} >
+                        <Icon name="reorder" styles={{paddingHorizontal: 10}} size={25} color="#000000" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -128,8 +127,8 @@ export default class SettingScreen extends React.Component{
     _renderInvisibleItem = ({item, index}) => {
         return (
             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor : "white", padding: 4 }} >
-                <Icon name="add-circle" size={22} color="#7CFC00" onPress={this._addItem.bind(this, item, index)} />
-                <Text style={{ marginLeft: 6}}>{item.title}</Text>
+                <Icon name="add-circle" size={24} color="#228B22" onPress={this._addItem.bind(this, item, index)} />
+                <Text style={{ marginLeft: 8, fontSize: 18}}>{item.title}</Text>
             </View>
         )
     }
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
     },
 
     divider: {
-        height: 6,
+        height: 3,
         backgroundColor: '#000000',
         marginTop: 8,
         marginBottom: 8

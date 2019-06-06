@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet, SectionList, Image, TouchableHighlight, Button, 
-    AsyncStorage, ActivityIndicator, Platform} from 'react-native';
+    AsyncStorage, ActivityIndicator, Platform, Alert} from 'react-native';
 import Moment from 'moment';
 import ExpandableList from 'react-native-expandable-section-list';
 import TimeAgo from 'react-native-timeago';
@@ -36,7 +36,8 @@ export default class HomeScreen extends React.Component{
 
         this.state = {
             config: [],
-            isLoading: true
+            isLoading: true,
+            openedSectionIndex: 0
         };
     }
 
@@ -80,7 +81,8 @@ export default class HomeScreen extends React.Component{
 
             this.setState({
                 config: sections ? JSON.parse(sections) : defaultConfig,
-                isLoading: true
+                isLoading: true,
+                openedSectionIndex: 0
             });
 
             this.fetchNewsData();
@@ -90,74 +92,91 @@ export default class HomeScreen extends React.Component{
     }
 
     fetchNewsData(){
-        const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
-
-
-        const parseString = require('react-native-xml2js').parseString;
-
         this.setState(prevState => {
             prevState.isLoading = true;
             return prevState;
         });
 
-        Promise.all(this.state.config
-                        .filter(oConfig => oConfig.visible)
-                        .map((oConfig) => {
-                            return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
-                                .then(response => response.text());
-        })).then(aResponses => {
-            let config = this.state.config;
-            Promise.all(aResponses.map((response, index) => {
-                return new Promise((resolve, reject) => {
-                    parseString(response, (err, result) => {
-                        let items = result && result.rss && result.rss.channel ? result.rss.channel[0].item : [];
-    
-                        Promise.all(items.map(async (oItem) => {
-                            return {
-                                title: oItem.title ? oItem.title[0] : "",
-                                pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
-                                thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
-                                updatedDate: oItem.updatedDate ? oItem.updatedDate[0] : "",
-                                video_url:  oItem.video_url ? oItem.video_url[0] : "",
-                                link: oItem.link?  oItem.link[0] : "",
-                                fullimage: oItem.fullimage ? oItem.fullimage[0] : "",
-                                excerpt: oItem.excerpt ? oItem.excerpt[0] : "",
-                                description: oItem.description ? oItem.description[0] : "",
-                                Articleid: oItem.Articleid ? oItem.Articleid[0] : "",
-                                authorname: oItem.authorname ? oItem.authorname[0] : "",
-                                authorimage: oItem.authorimage ? oItem.authorimage[0] : "",
-                                mediacontent: {
-                                    height: oItem['media:content'][0].$.height,
-                                    width: oItem['media:content'][0].$.width,
-                                    url: oItem['media:content'][0].$.url
-                                },
-                                isStoryRead: oItem.Articleid ? await this._isStoryRead(oItem.Articleid) : false
-                            };
-    
-                        })).then(aItems => {
-                            config[index]['data'] = aItems;
-                            resolve();
-                        }).catch(err => {
-                            console.log(err);
-                            reject();
-                        });
-                        
-                    });
-                });
-                
-            })).then(_ => {
-                config = config.filter(oList => oList.data && oList.data.length > 0);
+        this._loadSectionData("0")
+            .then(_ => {
+                this.setState(prevState => {
+                    prevState.isLoading = false;
 
-                this.setState({
-                    config: config,
-                    isLoading: false
+                    return prevState;
                 });
-
-            }).catch(err => {
-                console.log(err);
             });
 
-        }).catch(err => console.log(err));
+        return;
+
+        // const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
+
+
+        // const parseString = require('react-native-xml2js').parseString;
+
+        // this.setState(prevState => {
+        //     prevState.isLoading = true;
+        //     return prevState;
+        // });
+
+        // Promise.all(this.state.config
+        //                 .filter(oConfig => oConfig.visible)
+        //                 .map((oConfig) => {
+        //                     return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
+        //                         .then(response => response.text());
+        // })).then(aResponses => {
+        //     let config = this.state.config;
+        //     Promise.all(aResponses.map((response, index) => {
+        //         return new Promise((resolve, reject) => {
+        //             parseString(response, (err, result) => {
+        //                 let items = result && result.rss && result.rss.channel ? result.rss.channel[0].item : [];
+    
+        //                 Promise.all(items.map(async (oItem) => {
+        //                     return {
+        //                         title: oItem.title ? oItem.title[0] : "",
+        //                         pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
+        //                         thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
+        //                         updatedDate: oItem.updatedDate ? oItem.updatedDate[0] : "",
+        //                         video_url:  oItem.video_url ? oItem.video_url[0] : "",
+        //                         link: oItem.link?  oItem.link[0] : "",
+        //                         fullimage: oItem.fullimage ? oItem.fullimage[0] : "",
+        //                         excerpt: oItem.excerpt ? oItem.excerpt[0] : "",
+        //                         description: oItem.description ? oItem.description[0] : "",
+        //                         Articleid: oItem.Articleid ? oItem.Articleid[0] : "",
+        //                         authorname: oItem.authorname ? oItem.authorname[0] : "",
+        //                         authorimage: oItem.authorimage ? oItem.authorimage[0] : "",
+        //                         mediacontent: {
+        //                             height: oItem['media:content'][0].$.height,
+        //                             width: oItem['media:content'][0].$.width,
+        //                             url: oItem['media:content'][0].$.url
+        //                         },
+        //                         isStoryRead: oItem.Articleid ? await this._isStoryRead(oItem.Articleid) : false
+        //                     };
+    
+        //                 })).then(aItems => {
+        //                     config[index]['data'] = aItems;
+        //                     resolve();
+        //                 }).catch(err => {
+        //                     console.log(err);
+        //                     reject();
+        //                 });
+                        
+        //             });
+        //         });
+                
+        //     })).then(_ => {
+        //         config = config.filter(oList => oList.data && oList.data.length > 0);
+
+        //         this.setState({
+        //             config: config,
+        //             isLoading: false,
+        //             openedSectionIndex: 0
+        //         });
+
+        //     }).catch(err => {
+        //         console.log(err);
+        //     });
+
+        // }).catch(err => console.log(err));
     }
 
     _navigateToDetailPage(itemData, rowId, sectionId){
@@ -189,7 +208,6 @@ export default class HomeScreen extends React.Component{
         try{
             const sectionList = await AsyncStorage.getItem("@SectionList");
             if(sectionList){
-                console.log(sectionList);
                 return sectionList;
             } else{
                 return null;
@@ -224,6 +242,76 @@ export default class HomeScreen extends React.Component{
         }
     }
 
+    _loadSectionData = (sectionId) => {
+        const parseString = require('react-native-xml2js').parseString;
+        const BASE_URL = "https://www.tribuneindia.com/rss/feed.aspx?cat_id=";
+
+        const oConfig = this.state.config[parseInt(sectionId, 10)];
+
+        return fetch(BASE_URL + oConfig.id +  (oConfig.mid ? `&mid=${oConfig.mid}` : "")  )
+            .then(response => response.text())
+            .then(response => {
+                return new Promise((resolve, reject) => {
+                    parseString(response, (err, result) => {
+                        if(err) reject(err);
+
+                        resolve(
+                            result && result.rss && result.rss.channel ? result.rss.channel[0].item : []
+                        );
+                    });
+                });
+            }).then(newsItems => {
+                return Promise.all(newsItems.map(async (oItem) => {
+                    return {
+                        title: oItem.title ? oItem.title[0] : "",
+                        pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
+                        thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
+                        updatedDate: oItem.updatedDate ? oItem.updatedDate[0] : "",
+                        video_url:  oItem.video_url ? oItem.video_url[0] : "",
+                        link: oItem.link?  oItem.link[0] : "",
+                        fullimage: oItem.fullimage ? oItem.fullimage[0] : "",
+                        excerpt: oItem.excerpt ? oItem.excerpt[0] : "",
+                        description: oItem.description ? oItem.description[0] : "",
+                        Articleid: oItem.Articleid ? oItem.Articleid[0] : "",
+                        authorname: oItem.authorname ? oItem.authorname[0] : "",
+                        authorimage: oItem.authorimage ? oItem.authorimage[0] : "",
+                        mediacontent: {
+                            height: oItem['media:content'][0].$.height,
+                            width: oItem['media:content'][0].$.width,
+                            url: oItem['media:content'][0].$.url
+                        },
+                        isStoryRead: oItem.Articleid ? await this._isStoryRead(oItem.Articleid) : false
+                    };
+
+                }))
+            }).then(newsItems => {
+                // oConfig['data'] = newsItems;
+                debugger;
+                this.setState(prevState => {
+                    prevState.config[parseInt(sectionId)]['data'] = newsItems;
+                    prevState.openedSectionIndex = parseInt(sectionId)
+                    
+                    return prevState;
+                });
+            }).catch(err => {
+                console.log(err);
+                
+                Alert.alert(
+                    "Error",
+                    "This is embarassing, something went wrong",
+                    [
+                        {text: 'cancel', style: 'cancel'}
+                    ]
+                );
+            });
+    }
+
+    _headerClick = (sectionId, isOpening) => {
+        if(isOpening){
+            this._loadSectionData(sectionId);
+        }
+    }
+
     render(){
         const {navigation} = this.props;
 
@@ -240,7 +328,7 @@ export default class HomeScreen extends React.Component{
             <View style={styles.container}>
 
                 <ExpandableList 
-                    dataSource={this.state.config}
+                    dataSource={this.state.config.filter(oConfig => oConfig.visible)}
                     headerKey="title"
                     memberKey="data"
                     renderRow={(item, rowId, sectionId) => {
@@ -254,23 +342,12 @@ export default class HomeScreen extends React.Component{
                             )
                         }
                     }
+                    headerOnPress={this._headerClick}
                     onRefreshStart={this.fetchNewsData.bind(this)}
                     renderSectionHeaderX={(section, sectionId) => <Text style={styles.sectionHeader}>{section}</Text> } 
-                    openOptions={[0]}
+                    openOptions={[this.state.openedSectionIndex]}
                  />
 
-                {/* <SectionList
-                    stickySectionHeadersEnabled={true}
-                    refreshing={ this.state.isLoading }
-                    onRefresh={() => this.fetchNewsData()}
-                    sections={ this.state.config }
-                    renderSectionHeader={({section}) => <Text style={styles.sectionHeader}>{section.title}</Text> }
-                    renderItem={ ({item}) =>  
-                        <TouchableHighlight underlayColor='gray' onPress={() => this._navigateToDetailPage(item)}>
-                            <SectionListItem  itemData={item} />
-                        </TouchableHighlight>  }
-                    keyExtractor={ ({id}, index) => index }
-                    /> */}
             </View>
         )
     }
@@ -358,7 +435,7 @@ class SectionListItem extends React.Component{
 
                 <View style={{flex: 1}}>
                     <Text style={[styles.sectionTitleText, this.props.itemData.isStoryRead ? styles.readStory : styles.unreadStory]} numberOfLines={4}>{this.props.itemData.title}</Text>
-                    <TimeAgo style={styles.sectionPublishedDate} time={this.props.itemData.pubDate} ></TimeAgo>
+                    <TimeAgo style={styles.sectionPublishedDate} time={this.props.itemData.updatedDate} ></TimeAgo>
                 </View>
             </View>
         )
