@@ -364,8 +364,7 @@ const styles = StyleSheet.create({
     }, 
 
     headerButtonsIcon: {
-        marginRight: 4,
-        marginLeft: 12
+        marginRight: 20
     },
 
     centerItem: {

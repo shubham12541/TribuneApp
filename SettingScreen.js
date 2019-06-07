@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Image, Dimensions, ScrollView, Button, 
     TouchableOpacity, AsyncStorage,FlatList} from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import Icon from './IconComponent'
+import Icon from './IconComponent';
 
 export default class SettingScreen extends React.Component{
 

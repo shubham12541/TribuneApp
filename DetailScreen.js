@@ -1,8 +1,9 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image, Dimensions, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, Image, Dimensions, ScrollView, Share} from 'react-native';
 import Moment from 'moment';
 import HTML from 'react-native-render-html';
 import { getParentsTagsRecursively } from 'react-native-render-html/src/HTMLUtils';
+import Icon from './IconComponent';
 
 export default class DetailScreen extends React.Component{
 
@@ -10,6 +11,9 @@ export default class DetailScreen extends React.Component{
     static navigationOptions = ({navigation}) => {
         return {
             headerTitle: <Text style={{fontWeight: "bold", marginHorizontal: 4}}>{navigation.getParam("sectionName", "")}</Text>,
+            headerRight: (
+                <Icon name="share" size={30} color="#5E98CA" style={{marginRight: 20}} onPress={navigation.getParam("shareStory")}></Icon>
+            )
         }
     }
 
@@ -18,6 +22,20 @@ export default class DetailScreen extends React.Component{
     }
 
     componentDidMount(){
+        this.props.navigation.setParams({shareStory: this._shareStory.bind(this)});
+    }
+
+    _shareStory(){
+        const itemData = this.props.navigation.getParam("itemData", {});
+
+        Share.share({
+            message: itemData.link,
+            url: itemData.link,
+            title: "Check this news story from Tribune"
+        }, {
+            dialogTitle: "Share news story"
+        });
+
     }
 
     _isValidImageUrl(imageUrl){
