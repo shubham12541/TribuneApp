@@ -186,7 +186,7 @@ export default class HomeScreen extends React.Component{
 
         this._storeData(itemData.Articleid);
 
-        navigation.navigate('Detail', {itemData: itemData, sectionName: this.state.config[parseInt(sectionId, 10)].title});
+        navigation.navigate('Detail', {itemData: itemData});
     }
 
     _nagivateToSettingsPage(){
@@ -263,6 +263,7 @@ export default class HomeScreen extends React.Component{
             }).then(newsItems => {
                 return Promise.all(newsItems.map(async (oItem) => {
                     return {
+                        sectionTitle: oConfig.title,
                         title: oItem.title ? oItem.title[0] : "",
                         pubDate: oItem.pubDate ?  oItem.pubDate[0] : "",
                         thumbimage: oItem.thumbimage ? oItem.thumbimage[0] : "",
@@ -286,7 +287,6 @@ export default class HomeScreen extends React.Component{
                 }))
             }).then(newsItems => {
                 // oConfig['data'] = newsItems;
-                debugger;
                 this.setState(prevState => {
                     prevState.config[parseInt(sectionId)]['data'] = newsItems;
                     prevState.openedSectionIndex = parseInt(sectionId)

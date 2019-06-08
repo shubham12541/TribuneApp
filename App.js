@@ -1,12 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { createStackNavigator, createAppContainer } from 'react-navigation';
+import { createStackNavigator, createAppContainer, createBottomTabNavigator} from 'react-navigation';
 
+import Icon from './IconComponent';
 import HomeScreen from './HomeScreen';
 import DetailScreen from './DetailScreen';
 import SettingScreen from './SettingScreen';
+import SavedStoriesScreen from './SavedStoriesScreen';
 
-const MainNavigator = createStackNavigator({
+const HomeStack = createStackNavigator({
   Home: {screen: HomeScreen},
   Detail: {screen: DetailScreen},
   Settings: {screen: SettingScreen}
@@ -14,7 +16,28 @@ const MainNavigator = createStackNavigator({
   initialRouteName: 'Home'
 });
 
-const AppContainer = createAppContainer(MainNavigator);
+const SavedStoriesStack = createStackNavigator({
+	SavedStories: {screen: SavedStoriesScreen},
+	SavedDetail: {screen: DetailScreen}
+}, {
+	initialRouteName: 'SavedStories'
+})
+
+const TabNavigator = createBottomTabNavigator({
+	Home: HomeStack,
+	SavedStories: SavedStoriesStack
+}, {
+	defaultNavigationOptions: ({navigation}) => ({
+		tabBarIcon: ({focused, horizontal, tintColor}) => {
+			const { routeName } = navigation.state;
+
+			return <Icon size={25} name={routeName === "Home" ? "home" : "bookmarks" } color={tintColor} />
+		}
+	})
+});
+
+const AppContainer = createAppContainer(TabNavigator);
+
 
 export default class App extends React.Component {
   render() {
@@ -23,6 +46,8 @@ export default class App extends React.Component {
     );
   }
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
