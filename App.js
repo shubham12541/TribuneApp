@@ -32,6 +32,11 @@ const TabNavigator = createBottomTabNavigator({
 			const { routeName } = navigation.state;
 
 			return <Icon size={25} name={routeName === "Home" ? "home" : "bookmarks" } color={tintColor} />
+		},
+		tabBarLabel: ({}) => {
+			const {routeName} = navigation.state;
+
+			return <Text>{routeName === "Home" ? "Home" : "Saved Stories" }</Text>;
 		}
 	})
 });

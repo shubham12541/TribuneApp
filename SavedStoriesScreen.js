@@ -171,7 +171,7 @@ class ListItem extends React.Component{
 
         return(
             <View style={{flex: 1, padding: 4}}>
-                <Text style={{fontWeight: "bold", fontSize: 10, margin: 0, padding: 0, color: '#5E98CA'}}>{this.props.itemData.sectionTitle}</Text>
+                <Text style={{fontWeight: "bold", fontSize: 11, margin: 0, padding: 0, color: '#000080'}}>{this.props.itemData.sectionTitle}</Text>
                 <View style={styles.sectionItem}>
                     <Image source={{uri: this.props.itemData.thumbimage ? this.props.itemData.thumbimage : defaultThumb }} 
                         style={styles.thumbimage} />
