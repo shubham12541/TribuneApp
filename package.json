@@ -23,7 +23,7 @@
     "react-native-timeago": "^0.4.0",
     "react-native-xml2js": "^1.0.3",
     "react-navigation": "^3.3.0",
-    "react-xml-parser": "^1.1.2"
+    "react-xml-parser": "^1.1.8"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0"
